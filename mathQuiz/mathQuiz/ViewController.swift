@@ -32,11 +32,19 @@ class ViewController: UIViewController {
     var countRight: Int = 0
     var countWrong: Int = 0
     
+    let synthesizer = AVSpeechSynthesizer()
+    
+    let rightAnswerVoice: [String] = ["Awesome!", "Brilliant!", "Great job!"]
+    let wrongAnswerVoice: [String] = ["Ooops!", "Try Again!", "Come on!"]
+    
+    var selectedIndex = 0
+    
+    var isInitialLoad: Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        randomMultiply()
+        randomAddition()
     }
     
     
@@ -51,59 +59,217 @@ class ViewController: UIViewController {
     // 4. 결과 알려주기
     @IBOutlet weak var answerText: UILabel!
     
+    // 7. 사칙연산 Mode 추가
+    @IBOutlet weak var chooseMode: UISegmentedControl!
     
     
-    // 5. RESET 버튼
+    // 8. 사칙연산 메서드 구현
+    @IBAction func chooseModeAction(_ sender: UISegmentedControl!) {
+        
+        selectedIndex = sender.selectedSegmentIndex
+        
+        switch selectedIndex {
+        case 0:
+            randomAddition()
+        case 1:
+            randomMinus()
+        case 2:
+            randomMultiply()
+        case 3:
+            randomDivide()
+        default:
+            break
+        }
+    }
+    
+    // imageView
+    @IBOutlet weak var statusImage: UIImageView!
+   // firstImage, rightImage, wrongImage
+    
+    
+    
+    // 6. RESET 버튼
     @IBAction func resetButton(_ sender: Any) {
-        counting.text = "맞춘 갯수 : \(countRight)  / 틀린 갯수 : \(countWrong)"
         countRight = 0
         countWrong = 0
-        answerText.text = "다시 시작해볼까요?"
+        answerText.text = "Shall we try again?"
+        counting.text = "Right Answers : \(countRight)  / Wrong Answers : \(countWrong)"
     }
     
     
-    // 2. O,X 버튼
+    // 2. O,X 버튼과 맞고 틀린 갯수 세어주기
     @IBAction func rightButton(_ sender: Any) {
         
         if right == "O" {
-            answerText.text = "딩동댕~!"
+            answerText.text = "Awesome!🤩"
             countRight += 1
+//            statusImage.image = "rightImage"
+            speakRandomVoice(from: rightAnswerVoice) // 정답 읽어주기
         } else {
-            answerText.text = "앗 틀렸습니다"
+            answerText.text = "Ooops!🤪"
             countWrong += 1
+//            statusImage.image = "wrongImage"
+            speakRandomVoice(from: wrongAnswerVoice) // 오답 읽어주기
         }
-        counting.text = "맞춘 갯수 : \(countRight)  / 틀린 갯수 : \(countWrong)"
-        randomMultiply()
+        counting.text = "Right Answers : \(countRight)  / Wrong Answers : \(countWrong)"
+        
+//        loadInitialVoices()
+        switch selectedIndex {
+        case 0:
+            randomAddition()
+        case 1:
+            randomMinus()
+        case 2:
+            randomMultiply()
+        case 3:
+            randomDivide()
+        default:
+            break
+        }
     }
     
     @IBAction func wrongButton(_ sender: Any) {
         if right == "X" {
-            answerText.text = "앗 틀렸습니다"
+            answerText.text = "Ooops!🤪"
             countWrong += 1
+            speakRandomVoice(from: wrongAnswerVoice) // 오답 읽어주기
         } else {
-            answerText.text = "딩동댕~!"
+            answerText.text = "Awesome!🤩"
             countRight += 1
+            speakRandomVoice(from: rightAnswerVoice) // 정답 읽어주기
         }
-        counting.text = "맞춘 갯수 : \(countRight)  / 틀린 갯수 : \(countWrong)"
-        randomMultiply()
+        counting.text = "Right Answers : \(countRight)  / Wrong Answers : \(countWrong)"
+        
+        
+        switch selectedIndex {
+        case 0:
+            randomAddition()
+        case 1:
+            randomMinus()
+        case 2:
+            randomMultiply()
+        case 3:
+            randomDivide()
+        default:
+            break
+        }
     }
     
     
     
-    // 5. 랜덤으로 나오는 곱셈
-     func randomMultiply() {
+    // 5. 랜덤으로 나오는 곱셈식
+    func randomMultiply() {
+        
         let firstNum: Int = Int.random(in: 1...10)
         let secondNum: Int = Int.random(in: 1...10)
         let bool: Bool = Bool.random()
         
-        
         if bool == true {
             mathQuiz.text = "\(firstNum) X \(secondNum) = \(firstNum * secondNum)"
             right = "O"
+            
+            
         } else {
             mathQuiz.text = "\(firstNum) X \(secondNum) = \(Int.random(in: 1...100))"
             right = "X"
         }
+        
+        
+        print("randomMultiply")
+        
+    }
+    
+    // 9.랜덤으로 나오는 덧셈식
+    func randomAddition() {
+        
+        let firstNum: Int = Int.random(in: 1...10)
+        let secondNum: Int = Int.random(in: 1...10)
+        let bool: Bool = Bool.random()
+        
+        if bool == true {
+            mathQuiz.text = "\(firstNum) + \(secondNum) = \(firstNum + secondNum)"
+            right = "O"
+            
+        } else {
+            mathQuiz.text = "\(firstNum) + \(secondNum) = \(Int.random(in: 1...100))"
+            right = "X"
+            
+        }
+        
+        
+        print("randomAddition")
+        
+    }
+    
+    
+    
+    // 10. 랜덤으로 나오는 뺄셈식
+    func randomMinus() {
+        
+        let firstNum: Int = Int.random(in: 1...10)
+        let secondNum: Int = Int.random(in: 1...10)
+        let bool: Bool = Bool.random()
+        
+        if bool == true {
+            mathQuiz.text = "\(max(firstNum, secondNum)) - \(min(firstNum, secondNum)) = \(max(firstNum, secondNum) - min(firstNum, secondNum))"
+            right = "O"
+            
+            
+        } else {
+            mathQuiz.text = "\(max(firstNum, secondNum)) - \(min(firstNum, secondNum)) = \(Int.random(in: 1...100))"
+            right = "X"
+            
+        }
+        
+        
+        print("randomMinus")
+        
+    }
+    
+    
+    
+    // 11. 랜덤으로 나오는 나눗셈식
+    func randomDivide() {
+        
+        let firstNum: Int = Int.random(in: 1...10)
+        let secondNum: Int = Int.random(in: 1...10)
+        let bool: Bool = Bool.random()
+        
+        if bool == true {
+            mathQuiz.text = "\(max(firstNum, secondNum)) ÷ \(min(firstNum, secondNum)) = \(max(firstNum, secondNum) / min(firstNum, secondNum))"
+            right = "O"
+            
+        } else {
+            mathQuiz.text = "\(max(firstNum, secondNum)) ÷ \(min(firstNum, secondNum)) = \(Int.random(in: 0...10))"
+            right = "X"
+            
+            
+        }
+        
+        print("randomDivide")
+    }
+    
+    
+    
+    // 12. 정답인지 알려주는 함수
+    func speakAnswer(_ text: String?) {
+        
+        guard let text = text else { return }
+        
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-AU")
+        synthesizer.speak(utterance)
+        
+        print("speakAnswer")
+        
+    }
+    
+    func speakRandomVoice(from voices: [String]) {
+        let randomIndex = Int.random(in: 0..<voices.count)
+        let randomVoice = voices[randomIndex]
+        speakAnswer(randomVoice)
+        
+        print("speakRandomVoice")
     }
 
 }
